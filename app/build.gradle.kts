@@ -6,7 +6,9 @@ plugins {
 android {
     namespace = "com.edsonmendesfullstack.EstudosEspecificos"
     compileSdk = 36
-
+    buildFeatures {
+        viewBinding = true
+    }
     defaultConfig {
         applicationId = "com.edsonmendesfullstack.EstudosEspecificos"
         minSdk = 24
@@ -47,4 +49,15 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     implementation("com.google.android.gms:play-services-ads:23.0.0")
+
+    // 🚨 RETROFIT: Para requisições HTTP e mapeamento JSON
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0") // Para converter JSON em objetos Kotlin
+
+    // 🚨 OKHTTP: Usado pelo Retrofit para configurar Timeouts
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // 🚨 COROUTINES: Para gerenciar a concorrência assíncrona
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }
