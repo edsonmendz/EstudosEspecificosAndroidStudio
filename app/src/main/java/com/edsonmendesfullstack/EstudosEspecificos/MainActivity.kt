@@ -29,6 +29,8 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
 import androidx.fragment.app.commit
 
+import android.content.Intent
+
 import androidx.appcompat.app.ActionBarDrawerToggle // 🚨 NOVO: Resolve ActionBarDrawerToggle no setupNavigationDrawer
 
 
@@ -49,8 +51,6 @@ class MainActivity : AppCompatActivity() {
 
     // Variável para a AdView (mantida, mas acessada via binding)
     // private lateinit var adView: AdView // Não é mais necessário se usar binding
-
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -345,7 +345,17 @@ class MainActivity : AppCompatActivity() {
     fun onSubjectSelected(subject: Subject) {
         Log.d("SUBJECT_NAV", "Matéria selecionada: ID=${subject.id}, Nome=${subject.name}")
 
-        // TODO: AQUI É ONDE VOCÊ INICIA A TELA DE PERGUNTAS!
-        Toast.makeText(this, "Matéria ${subject.name} clicada. Pronto para começar o Quiz!", Toast.LENGTH_SHORT).show()
+        // 1. Fecha o drawer
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
+
+        // 2. Inicia o carregamento das perguntas e a QuizActivity
+        // TODO: Chamar o carregamento de perguntas e iniciar a QuizActivity
+
+        // Por enquanto, vamos simular a chamada para a QuizActivity
+        val intent = Intent(this, QuizActivity::class.java).apply {
+            // A Activity vai precisar do ID da matéria para carregar as perguntas
+            putExtra("SUBJECT_ID", subject.id)
+        }
+        startActivity(intent)
     }
 }
