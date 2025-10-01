@@ -16,6 +16,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import androidx.activity.OnBackPressedCallback
+import android.content.SharedPreferences
+import android.content.Context
+import android.view.MenuItem
 
 // Adicionado: É uma boa prática usar o Binding para acesso a Views,
 // inclusive para a AdView, se ela estiver no layout principal.
@@ -26,6 +29,7 @@ class MainActivity : AppCompatActivity() {
 
     // Utiliza o View Binding para acessar todas as Views do layout
     private lateinit var binding: ActivityMainBinding
+    private lateinit var sharedPrefs: SharedPreferences
 
     // Variável para a AdView (mantida, mas acessada via binding)
     // private lateinit var adView: AdView // Não é mais necessário se usar binding
@@ -41,6 +45,37 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+
+        // -----------------------------------------------------------------------
+        // Inicializa o SharedPreferences
+        sharedPrefs = getSharedPreferences(PrefsKeys.PREFS_FILE, Context.MODE_PRIVATE)
+
+        // A) Lógica do Contador de Inicializações (Launch Count)
+        val currentLaunchCount = sharedPrefs.getInt(PrefsKeys.LAUNCH_COUNT, 0)
+        val newLaunchCount = currentLaunchCount + 1
+
+        // Salva o novo valor
+        sharedPrefs.edit().putInt(PrefsKeys.LAUNCH_COUNT, newLaunchCount).apply()
+
+        Log.i("PREFS_INFO", "App inicializado pela $newLaunchCount" + "ª vez.")
+
+
+        // B) Lógica para Leitura da Quantidade de Perguntas
+        val questionQuantity = sharedPrefs.getInt(
+            PrefsKeys.QUESTION_QUANTITY,
+            PrefsKeys.DEFAULT_QUESTION_QUANTITY
+        )
+        Log.i("PREFS_INFO", "Quantidade de perguntas a buscar: $questionQuantity")
+
+        // A coroutine de API agora usará este valor lido:
+        // fetchDataFromApi(questionQuantity)
+
+        // C) Lógica para Anúncios (Leitura da Última Exibição)
+        val lastAdTime = sharedPrefs.getLong(PrefsKeys.LAST_AD_TIME, PrefsKeys.DEFAULT_AD_TIME)
+        // Você usará lastAdTime para decidir se deve ou não mostrar o anúncio
+        Log.i("PREFS_INFO", "Último anúncio exibido em: $lastAdTime (Timestamp)")
+
+        // -----------------------------------------------------------------------
 
         val callback = object : OnBackPressedCallback(true) { // Habilitado por padrão
             override fun handleOnBackPressed() {
@@ -62,6 +97,7 @@ class MainActivity : AppCompatActivity() {
         // 2. Configuração da Top Bar (Toolbar)
         // Acessamos a Toolbar que está DENTRO do AppBarLayout
         setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         // 3. Configurar o Navigation Drawer e o botão Hamburger
         setupNavigationDrawer()
@@ -77,19 +113,15 @@ class MainActivity : AppCompatActivity() {
         // 6. Chama a função de API
         // Esta chamada pode ser movida para onResume() ou para um evento de clique,
         // dependendo da sua necessidade, mas a mantemos aqui por enquanto.
-        fetchDataFromApi()
+        fetchDataFromApi(questionQuantity)
 
-        // ⚠️ REMOVIDO: A lógica de ViewCompat.setOnApplyWindowInsetsListener
-        // Foi removida porque o DrawerLayout e o AppBarLayout geralmente tratam
-        // a maioria dos insets do sistema automaticamente quando usados em conjunto.
     }
 
 
 
     // Função de lógica da API (mantida como estava)
-    private fun fetchDataFromApi() {
+    private fun fetchDataFromApi(quantityToFetch: Int) {
         val subjectIdToFetch = 10
-        val quantityToFetch = 2
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -117,6 +149,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun handleQuantitySelection(quantity: Int, menuItem: MenuItem): Boolean {
+        // 1. Salva a nova quantidade no SharedPreferences
+        sharedPrefs.edit().putInt(PrefsKeys.QUESTION_QUANTITY, quantity).apply()
+
+        // 2. Marca o item de menu como checado
+        menuItem.isChecked = true
+
+        // 3. Opcional: Recarrega os dados com a nova quantidade (se for o caso)
+        // fetchDataFromApi(quantity)
+
+        return true
+    }
+
+    private fun checkSavedQuantityOption() {
+        val savedQuantity = sharedPrefs.getInt(
+            PrefsKeys.QUESTION_QUANTITY,
+            PrefsKeys.DEFAULT_QUESTION_QUANTITY
+        )
+
+        val menuId = when (savedQuantity) {
+            5 -> R.id.nav_quantity_5
+            10 -> R.id.nav_quantity_10
+            15 -> R.id.nav_quantity_15
+            else -> R.id.nav_quantity_10 // Padrão
+        }
+
+        // Procura o item de menu e o marca
+        binding.navView.menu.findItem(menuId)?.isChecked = true
+    }
+
     // Função para configurar a Sidebar (Navigation Drawer)
     private fun setupNavigationDrawer() {
         // Usa a Toolbar para gerenciar o botão Hamburger
@@ -133,24 +196,36 @@ class MainActivity : AppCompatActivity() {
 
         // Lidar com cliques nos itens da Sidebar (Navigation View)
         binding.navView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
+            // Fecha o drawer após o clique
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+
+            return@setNavigationItemSelectedListener when (menuItem.itemId) {
+
+                // -------------------------------------------------------------
+                // LÓGICA DE CONFIGURAÇÃO DE QUANTIDADE DE PERGUNTAS
+                // -------------------------------------------------------------
+                R.id.nav_quantity_5 -> handleQuantitySelection(5, menuItem)
+                R.id.nav_quantity_10 -> handleQuantitySelection(10, menuItem)
+                R.id.nav_quantity_15 -> handleQuantitySelection(15, menuItem)
+
+                // -------------------------------------------------------------
+                // LÓGICA DAS TELAS PRINCIPAIS (mantida)
+                // -------------------------------------------------------------
                 R.id.nav_home -> {
-                    // Lógica para ir para a Home
+                    // Lógica para ir para a tela Home
+                    true // Indica que o item foi manipulado
                 }
                 R.id.nav_subjects -> {
-                    // Lógica para ir para a Activity de Matérias
+                    // Lógica para ir para a tela de Matérias
+                    true
                 }
                 R.id.nav_settings -> {
-                    // Lógica para ir para a Activity de Configurações
+                    // Lógica para Configurações
+                    true
                 }
+                else -> false
             }
-            // Fecha a gaveta após o clique
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-            true
         }
+        checkSavedQuantityOption()
     }
-
-
-    // Permite fechar a sidebar com o botão "Voltar"
-
 }

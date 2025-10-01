@@ -3,4 +3,6 @@
 
     <string name="navigation_drawer_open">Abrir menu de navegação</string>
     <string name="navigation_drawer_close">Fechar menu de navegação</string>
+
+    <string name="admob_banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
 </resources>

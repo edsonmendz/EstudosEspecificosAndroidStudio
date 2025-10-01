@@ -1,20 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:showIn="navigation_view">
+xmlns:tools="http://schemas.android.com/tools"
+tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_home"
-            android:icon="@drawable/baseline_home_24"
-            android:title="Início" />
-        <item
-            android:id="@+id/nav_subjects"
-            android:icon="@drawable/baseline_format_list_bulleted_24"
-            android:title="Matérias" />
-        <item
-            android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_menu_settings"
-            android:title="Configurações" />
-    </group>
+<group android:checkableBehavior="single">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/baseline_home_24"
+        android:title="Início" />
+    <item
+        android:id="@+id/nav_subjects"
+        android:icon="@drawable/baseline_format_list_bulleted_24"
+        android:title="Matérias" />
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/baseline_settings_24"
+        android:title="Configurações" />
+</group>
+
+<item android:title="Configurações de Consulta">
+    <menu>
+        <group android:id="@+id/question_quantity_group"
+            android:checkableBehavior="single">
+
+            <item
+                android:id="@+id/nav_quantity_5"
+                android:title="Perguntas: 5"
+                android:checkable="true" />
+            <item
+                android:id="@+id/nav_quantity_10"
+                android:title="Perguntas: 10"
+                android:checkable="true" />
+            <item
+                android:id="@+id/nav_quantity_15"
+                android:title="Perguntas: 15"
+                android:checkable="true" />
+        </group>
+    </menu>
+</item>
+
 </menu>
