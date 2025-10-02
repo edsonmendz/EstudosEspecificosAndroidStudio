@@ -267,15 +267,21 @@ class MainActivity : AppCompatActivity() {
 
                     // Armazena no cache da Activity na thread principal
                     withContext(Dispatchers.Main) {
-                        allThemes = themes
-                        allSubjects = subjects
+                        // 🚨 PASSO 1: ORDENAR TEMAS POR NOME
+                        val sortedThemes = themes.sortedBy { it.name }
+
+                        // 🚨 PASSO 2: ORDENAR MATÉRIAS POR NOME
+                        val sortedSubjects = subjects.sortedBy { it.name }
+
+                        allThemes = sortedThemes
+                        allSubjects = sortedSubjects
 
                         // 🚨 NOVO LOG DE VALIDAÇÃO
                         Log.d("API_LOAD", "Temas carregados: ${themes.size}")
                         Log.d("API_LOAD", "Matérias carregadas: ${subjects}")
 
                         if (themes.isNotEmpty()) {
-                            showThemesFragment(themes)
+                            showThemesFragment(sortedThemes)
                         } else {
                             // Tratar erro: Lista vazia
                         }
