@@ -2,9 +2,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".QuizActivity">
+
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adViewBannerQuiz"
@@ -99,4 +101,6 @@
             android:layout_marginStart="4dp" />
     </LinearLayout>
 
+
 </androidx.constraintlayout.widget.ConstraintLayout>
+

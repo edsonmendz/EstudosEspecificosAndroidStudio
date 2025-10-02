@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
+import androidx.fragment.app.commit
 
 class QuizActivity : AppCompatActivity() {
 
@@ -49,6 +50,7 @@ class QuizActivity : AppCompatActivity() {
         // 3. Configura os botões de navegação
         setupNavigationButtons()
     }
+
 
     // -------------------------------------------------------------------------
     // 🚨 BLOCKS 1 & 2: EXIBIÇÃO DA PERGUNTA E RESPOSTAS
