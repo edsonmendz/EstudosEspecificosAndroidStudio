@@ -35,6 +35,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle // 🚨 NOVO: Resolve Action
 
 
 import com.edsonmendesfullstack.EstudosEspecificos.ThemesFragment
+import androidx.core.content.edit
 
 // Adicionado: É uma boa prática usar o Binding para acesso a Views,
 // inclusive para a AdView, se ela estiver no layout principal.
@@ -80,7 +81,7 @@ class MainActivity : AppCompatActivity() {
         val newLaunchCount = currentLaunchCount + 1
 
         // Salva o novo valor
-        sharedPrefs.edit().putInt(PrefsKeys.LAUNCH_COUNT, newLaunchCount).apply()
+        sharedPrefs.edit { putInt(PrefsKeys.LAUNCH_COUNT, newLaunchCount) }
 
         Log.i("PREFS_INFO", "App inicializado pela $newLaunchCount" + "ª vez.")
 

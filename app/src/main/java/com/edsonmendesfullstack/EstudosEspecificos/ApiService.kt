@@ -25,9 +25,10 @@ interface ApiService {
      * opcionalmente manipulando a quantidade (qtd).
      * Ex: /perguntas/10?qtd=2
      */
-    @GET("perguntas/{materiaId}") // 🚨 Usa o ID da matéria no PATH
+    @GET("perguntas/{subjectId}") // 🚨 CORRIGIDO: O nome no Path AGORA É 'subjectId'
     suspend fun getQuestionsBySubject(
-        @Path("materiaId") subjectId: Int, // O '10' na URL
-        @Query("qtd") quantity: Int? = null // 🚨 O '2' na URL, parâmetro OPCIONAL
-    ): QuestionResponse // 🚨 O retorno é o novo objeto QuestionResponse
+        // 🚨 CORRIGIDO: O nome da anotação AGORA É 'subjectId' para casar com o Path
+        @Path("subjectId") subjectId: Int, // O '10' na URL
+        @Query("qtd") quantity: Int? = null // O '2' na URL
+    ): QuestionResponse
 }

@@ -17,6 +17,7 @@ import kotlin.random.Random
 import androidx.fragment.app.commit
 import android.view.View
 
+
 class QuizActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityQuizBinding
@@ -27,9 +28,6 @@ class QuizActivity : AppCompatActivity() {
 
     // ID da matéria recebido via Intent
     private val subjectId: Int by lazy { intent.getIntExtra("SUBJECT_ID", -1) }
-
-    // Você deve definir a quantidade de perguntas a serem carregadas (ex: 10)
-    private val questionQuantity = 10
 
     private fun showLoading() {
         // Usa o FragmentManager para exibir o LoadingFragment
@@ -66,6 +64,7 @@ class QuizActivity : AppCompatActivity() {
         binding.adViewBannerQuiz.loadAd(AdRequest.Builder().build())
 
         // 2. Carrega as perguntas
+        Log.d("QUIZ_DEBUG", "Subject ID (recebido da Intent): $subjectId")
         if (subjectId != -1) {
             loadQuestionsAsync()
         } else {
@@ -158,16 +157,27 @@ class QuizActivity : AppCompatActivity() {
             .show()
     }
 
+
+    private fun getQuestionCountPreference(): Int {
+        val prefs = getSharedPreferences(PrefsKeys.PREFS_FILE, MODE_PRIVATE)
+
+        // Retorna o valor salvo (5, 10 ou 15), ou o padrão (10) se não houver valor.
+        return prefs.getInt(
+            PrefsKeys.QUESTION_QUANTITY,
+            PrefsKeys.DEFAULT_QUESTION_QUANTITY // Lê o 10 se a chave não for encontrada
+        )
+    }
     // -------------------------------------------------------------------------
     // 🚨 CARREGAMENTO DE DADOS
     // -------------------------------------------------------------------------
     private fun loadQuestionsAsync() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Endpoint: https://eeappads.onrender.com/perguntas/3?qtd=1
+                val requestedQuantity = getQuestionCountPreference()
+                Log.d("QUIZ_DEBUG", "Quantidade de perguntas solicitada: $requestedQuantity") // 🚨 NOVO LOG
                 val response: QuestionResponse = RetrofitClient.instance.getQuestionsBySubject(
                     subjectId = subjectId,
-                    quantity = questionQuantity // A quantidade que você definiu
+                    quantity = requestedQuantity // A quantidade que você definiu
                 )
 
                 withContext(Dispatchers.Main) {
