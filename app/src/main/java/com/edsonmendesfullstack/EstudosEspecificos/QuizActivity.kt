@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 import androidx.fragment.app.commit
+import android.view.View
 
 class QuizActivity : AppCompatActivity() {
 
@@ -30,10 +31,35 @@ class QuizActivity : AppCompatActivity() {
     // Você deve definir a quantidade de perguntas a serem carregadas (ex: 10)
     private val questionQuantity = 10
 
+    private fun showLoading() {
+        // Usa o FragmentManager para exibir o LoadingFragment
+        supportFragmentManager.commit {
+            // Usa REPLACE para garantir que qualquer coisa que estivesse lá seja removida
+            // O conteúdo principal está por baixo.
+            replace(binding.loadingFragmentContainer.id, LoadingFragment())
+        }
+    }
+
+    private fun hideLoading() {
+        val fragment = supportFragmentManager.findFragmentById(binding.loadingFragmentContainer.id)
+
+        if (fragment != null) {
+            supportFragmentManager.beginTransaction()
+                .remove(fragment)
+                .commitNow()
+        }
+
+        // 🚨 Plano B: Forçar o FrameLayout a sumir
+        binding.loadingFragmentContainer.visibility = View.GONE
+        // Certifique-se de importar android.view.View
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityQuizBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        showLoading()
 
         // 1. Inicializa Ads
         MobileAds.initialize(this) {}
@@ -147,16 +173,23 @@ class QuizActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     if (response.questions.isNotEmpty()) {
                         questions.addAll(response.questions)
-                        // Inicia a primeira pergunta
+                        // ✅ AQUI ESCONDEMOS O LOADING E MOSTRAMOS O CONTEÚDO
+                        hideLoading()
                         displayQuestion(questions.first())
                     } else {
-                        Toast.makeText(this@QuizActivity, "Nenhuma pergunta encontrada.", Toast.LENGTH_LONG).show()
-                        finish()
+                        // Tratar lista vazia
+                        withContext(Dispatchers.Main) {
+                            hideLoading() // Esconde em caso de lista vazia
+                            Toast.makeText(this@QuizActivity, "Nenhuma pergunta encontrada.", Toast.LENGTH_LONG).show()
+                            finish()
+                        }
                     }
                 }
             } catch (e: Exception) {
                 Log.e("API_QUIZ_ERROR", "Falha ao carregar perguntas: ${e.message}", e)
+
                 withContext(Dispatchers.Main) {
+                    hideLoading() // Esconde em caso de erro de rede
                     Toast.makeText(this@QuizActivity, "Erro de rede ao carregar o quiz.", Toast.LENGTH_LONG).show()
                     finish()
                 }
