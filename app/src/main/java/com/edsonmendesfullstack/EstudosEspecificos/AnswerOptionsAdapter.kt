@@ -1,5 +1,6 @@
 package com.edsonmendesfullstack.EstudosEspecificos
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,55 +9,103 @@ import androidx.recyclerview.widget.RecyclerView
 import com.edsonmendesfullstack.EstudosEspecificos.R
 import com.edsonmendesfullstack.EstudosEspecificos.Question
 import kotlin.random.Random
+import androidx.core.content.ContextCompat // 🚨 CORREÇÃO 1: Adicionado ContextCompat
+import com.edsonmendesfullstack.EstudosEspecificos.databinding.ItemAnswerOptionBinding // 🚨 CORREÇÃO 2: Adicione o import do View Binding
 
 class AnswerOptionsAdapter(
     private val question: Question,
-    private val onAnswerSelected: (String) -> Unit
-) : RecyclerView.Adapter<AnswerOptionsAdapter.AnswerViewHolder>() {
+    private val onAnswerSelected: (String) -> Unit,
+    private val isFinished: Boolean
+) : RecyclerView.Adapter<AnswerOptionsAdapter.ViewHolder>() {
 
-    // 🚨 Combina a resposta correta com as erradas e embaralha a lista
+    // 🚨 CORREÇÃO 3: Mantemos o ViewHolder que usa Binding
+    inner class ViewHolder(val binding: ItemAnswerOptionBinding) :
+        RecyclerView.ViewHolder(binding.root)
+
+    // Combina a resposta correta com as erradas e embaralha a lista
     private val answers: List<String> = (question.incorrectOptions + question.correctAnswer)
-        .shuffled(Random(question.id.toLong())) // Usa o ID da questão como semente para embaralhamento consistente
+        .shuffled(Random(question.id.toLong()))
 
-    // 🚨 Armazena o item selecionado (String da resposta)
+    // Armazena o item selecionado (String da resposta)
     private var selectedAnswer: String? = question.userSelectedAnswer
 
+
     fun updateSelection(selected: String) {
-        // Encontra a posição antiga e a nova
+        // ... (lógica de atualização permanece inalterada) ...
         val oldPosition = answers.indexOf(selectedAnswer)
         val newPosition = answers.indexOf(selected)
 
         selectedAnswer = selected
 
-        // Notifica o Adapter para redesenhar APENAS os itens afetados
         if (oldPosition != -1) notifyItemChanged(oldPosition)
         if (newPosition != -1) notifyItemChanged(newPosition)
 
-        // Informa a Activity qual foi a resposta selecionada
         onAnswerSelected(selected)
     }
 
-    class AnswerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    // ❌ CORREÇÃO 4: REMOVA a classe AnswerViewHolder antiga, pois não a usaremos mais
+    /* class AnswerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvOption: TextView = itemView.findViewById(R.id.tvAnswerOption)
     }
+    */
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AnswerViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_answer_option, parent, false)
-        return AnswerViewHolder(view)
+    // 🚨 CORREÇÃO 5: Atualiza para usar o View Binding e retornar o ViewHolder correto
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val binding = ItemAnswerOptionBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return ViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: AnswerViewHolder, position: Int) {
-        val answer = answers[position]
-        holder.tvOption.text = answer
+    // 🚨 CORREÇÃO 6: Atualiza o onBindViewHolder com a lógica de seleção normal (não finalizada)
+    @SuppressLint("ResourceAsColor")
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val answer = answers[position] // Use 'answers' que é a lista embaralhada
 
-        // Aplica o estado visual: verifica se a resposta atual é a selecionada
-        val isSelected = answer == selectedAnswer
-        holder.tvOption.isSelected = isSelected
+        holder.binding.tvAnswerOption.text = answer
 
-        holder.itemView.setOnClickListener {
-            // Se o usuário clicar, atualiza a seleção
-            updateSelection(answer)
+        // -------------------------------------------------------------
+        // LÓGICA DE CORREÇÃO VISUAL (Se o Quiz Terminou)
+        // -------------------------------------------------------------
+        if (isFinished) {
+            holder.binding.root.isClickable = false
+
+            val context = holder.itemView.context
+            val colorCorrect = ContextCompat.getColor(context, R.color.green_correct)
+            val colorWrong = ContextCompat.getColor(context, R.color.red_wrong)
+            val colorSelected = ContextCompat.getColor(context, R.color.purple_200)
+
+            when {
+                // A) Resposta CORRETA
+                answer == question.correctAnswer -> {
+                    holder.binding.root.setBackgroundColor(colorCorrect)
+                }
+                // B) Resposta MARCADA e ERRADA
+                answer == question.userSelectedAnswer && answer != question.correctAnswer -> {
+                    holder.binding.root.setBackgroundColor(colorSelected)
+                }
+                // C) Resposta não marcada / Outra opção errada
+                else -> {
+                    holder.binding.root.setBackgroundColor(colorWrong)
+                }
+            }
+        }
+        // -------------------------------------------------------------
+        // LÓGICA DE SELEÇÃO NORMAL (Se o Quiz NÃO Terminou)
+        // -------------------------------------------------------------
+        else {
+            val isSelected = answer == selectedAnswer
+
+            // 🚨 Use o estado 'isSelected' para aplicar o background de seleção.
+            // Aqui você deve usar um setBackgroundResource para o 'selected'/'default'
+            holder.binding.root.setOnClickListener {
+                updateSelection(answer)
+            }
+
+            // Exemplo de como aplicar o estilo de seleção (depende do seu XML)
+            holder.binding.root.isSelected = isSelected
         }
     }
 

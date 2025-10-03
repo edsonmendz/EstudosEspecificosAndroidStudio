@@ -78,20 +78,22 @@ class MainActivity : AppCompatActivity() {
 
         // A) Lógica do Contador de Inicializações (Launch Count)
         val currentLaunchCount = sharedPrefs.getInt(PrefsKeys.LAUNCH_COUNT, 0)
+        Log.d("LAUNCH_DEBUG", "Contagem de inicializações ANTES de incrementar: $currentLaunchCount")
         val newLaunchCount = currentLaunchCount + 1
 
         // Salva o novo valor
         sharedPrefs.edit { putInt(PrefsKeys.LAUNCH_COUNT, newLaunchCount) }
 
-        Log.i("PREFS_INFO", "App inicializado pela $newLaunchCount" + "ª vez.")
-
+        // 🚨 DEBUG 2: Mostra o valor SALVO (e verifica se o salvamento funcionou imediatamente)
+        val savedCountCheck = sharedPrefs.getInt(PrefsKeys.LAUNCH_COUNT, -1) // -1 para verificação
+        Log.d("LAUNCH_DEBUG", "Contagem de inicializações SALVA/VERIFICADA: $savedCountCheck")
 
         // B) Lógica para Leitura da Quantidade de Perguntas
         val questionQuantity = sharedPrefs.getInt(
             PrefsKeys.QUESTION_QUANTITY,
             PrefsKeys.DEFAULT_QUESTION_QUANTITY
         )
-        Log.i("PREFS_INFO", "Quantidade de perguntas a buscar: $questionQuantity")
+
 
         // A coroutine de API agora usará este valor lido:
         // fetchDataFromApi(questionQuantity)
@@ -241,14 +243,6 @@ class MainActivity : AppCompatActivity() {
                     // Lógica para ir para a tela Home
                     true // Indica que o item foi manipulado
                 }
-                R.id.nav_subjects -> {
-                    // Lógica para ir para a tela de Matérias
-                    true
-                }
-                R.id.nav_settings -> {
-                    // Lógica para Configurações
-                    true
-                }
                 else -> false
             }
         }
@@ -277,10 +271,6 @@ class MainActivity : AppCompatActivity() {
                         allThemes = sortedThemes
                         allSubjects = sortedSubjects
 
-                        // 🚨 NOVO LOG DE VALIDAÇÃO
-                        Log.d("API_LOAD", "Temas carregados: ${themes.size}")
-                        Log.d("API_LOAD", "Matérias carregadas: ${subjects}")
-
                         if (themes.isNotEmpty()) {
                             showThemesFragment(sortedThemes)
                         } else {
@@ -298,9 +288,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onThemeSelected(theme: Theme) {
-        // 1. Loga a seleção
-        Log.d("THEME_NAV", "Tema selecionado: ID=${theme.id}, Nome=${theme.name}")
-        Log.d("FILTER_DEBUG", "Total de Matérias carregadas (allSubjects): ${allSubjects?.size ?: 0}")
 
         // 2. Fecha o drawer (boa prática após uma seleção de conteúdo)
         binding.drawerLayout.closeDrawer(GravityCompat.START)
@@ -311,8 +298,6 @@ class MainActivity : AppCompatActivity() {
         val filteredSubjects = allSubjects?.filter { subject ->
             subject.themeId == theme.id
         } ?: emptyList()
-
-        Log.d("FILTER_DEBUG", "Matérias filtradas para Tema ${theme.id}: ${filteredSubjects.size}")
 
         if (filteredSubjects.isNotEmpty()) {
             // TODO: Chamar o Fragmento de Matérias (SubjectsFragment) com a lista filtrada
@@ -335,12 +320,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showThemesFragment(themes: List<Theme>) {
-        // Agora, vamos criar este Fragmento!
-        if (allSubjects == null) {
-            // Se as matérias não carregaram (teoricamente não deve acontecer aqui), trate o erro
-            Log.e("API_LOAD", "Matérias não carregadas junto com temas.")
-            return
-        }
 
         // 🚨 Substituir o Fragmento de Loading pelo Fragmento de Temas
         supportFragmentManager.commit {
@@ -350,7 +329,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onSubjectSelected(subject: Subject) {
-        Log.d("SUBJECT_NAV", "Matéria selecionada: ID=${subject.id}, Nome=${subject.name}")
 
         // 1. Fecha o drawer
         binding.drawerLayout.closeDrawer(GravityCompat.START)

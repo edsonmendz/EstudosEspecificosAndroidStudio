@@ -13,3 +13,8 @@ object PrefsKeys {
     const val DEFAULT_QUESTION_QUANTITY = 10
     const val DEFAULT_AD_TIME = 0L // 0L para timestamps/contadores de tempo
 }
+
+object AdsKeys {
+    const val INTERSTITIAL_ID = "ca-app-pub-3453425099228667/8428258817" // Seu ID real
+    const val LAUNCH_COUNT_TRIGGER = 2 // Mostrar anúncio a cada 5 inícios
+}
